@@ -1,0 +1,309 @@
+<title>رادار العروض</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* Concept: غرفة مراقبة. شريط رادار ثابت بالأعلى، شريط أرقام، فلاتر سريعة، ثم شبكة بطاقات تتحدث لحظياً. تصميم داكن بالكامل بقرار واضح من المستخدم. */
+:root{
+  --bg:#0a1016;
+  --surface:#111a23;
+  --surface-2:#182531;
+  --line:#233545;
+  --text:#e8eff4;
+  --muted:#8ea1b0;
+  --signal:#38d9e8;
+  --hot:#ff5470;
+  --warm:#ffb547;
+  --c-noon:#ffe14a;
+  --c-amazon:#ff9a1f;
+  --c-breadfast:#34c98b;
+  --c-talabat:#ff5a2e;
+  --c-other:#7f93a3;
+  --on-store:#10161c;
+  --font-display:'Reem Kufi','IBM Plex Sans Arabic',system-ui,Tahoma,sans-serif;
+  --font-body:'IBM Plex Sans Arabic',system-ui,Tahoma,'Segoe UI',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:15px;line-height:1.55;direction:rtl}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+.app{max-width:1100px;margin-inline:auto;padding-inline:16px;padding-block:0 56px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);margin-inline:-16px;padding-inline:16px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.mark{position:relative;width:42px;height:42px;flex:none;color:var(--signal);border-radius:50%}
+.mark svg{display:block;width:100%;height:100%}
+.mark::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--hot);opacity:0;pointer-events:none}
+.sweep{transform-box:view-box;transform-origin:50% 50%}
+.brand-text{display:flex;flex-direction:column;min-width:0}
+.brand-text h1{margin:0;font-family:var(--font-display);font-weight:700;font-size:23px;line-height:1.1;letter-spacing:0}
+.latin{font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;color:var(--muted);direction:ltr;text-align:start}
+.live-pill{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding-inline:14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:600;white-space:nowrap}
+.live-pill .dot{width:9px;height:9px;border-radius:50%;background:var(--signal);box-shadow:0 0 0 0 color-mix(in srgb,var(--signal) 60%,transparent)}
+.live-pill[aria-pressed="false"] .dot{background:var(--muted)}
+
+.demo-note{display:flex;align-items:flex-start;gap:10px;margin:14px 0 0;padding:10px 12px;border:1px dashed color-mix(in srgb,var(--warm) 55%,var(--line));border-radius:12px;color:var(--muted);font-size:13px}
+.demo-note b{color:var(--warm);font-weight:600;white-space:nowrap}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;margin-block:14px 0;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.stat{background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat .k{font-size:12px;color:var(--muted)}
+.stat .v{font-family:var(--font-mono);font-weight:500;font-size:24px;line-height:1.25;font-variant-numeric:tabular-nums}
+.stat .v.sm{font-family:var(--font-body);font-size:17px;font-weight:600;line-height:1.7}
+.stat .sub{font-size:11px;color:var(--muted)}
+
+/* controls */
+.controls{display:flex;flex-direction:column;gap:10px;margin-block:14px 0}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-block:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:inline-flex;align-items:center;gap:8px;min-height:40px;padding-inline:14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:14px}
+.chip .sw{width:10px;height:10px;border-radius:3px;background:var(--c,var(--signal))}
+.chip .n{font-family:var(--font-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--text);color:var(--bg);border-color:var(--text)}
+.chip[aria-pressed="true"] .n{color:var(--bg);opacity:.7}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{min-height:40px;padding-inline:12px;border:0;background:transparent;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button+button{border-inline-start:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--surface-2);color:var(--text)}
+.switch,.tool{display:inline-flex;align-items:center;gap:10px;min-height:40px;padding-inline:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:13px;font-weight:600}
+.track{position:relative;width:34px;height:20px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);flex:none}
+.knob{position:absolute;top:2px;inset-inline-start:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:inset-inline-start .15s,background .15s}
+.switch[aria-checked="true"] .track{background:color-mix(in srgb,var(--signal) 30%,var(--surface-2));border-color:var(--signal)}
+.switch[aria-checked="true"] .knob{inset-inline-start:16px;background:var(--signal)}
+.tool svg{flex:none}
+.tool[aria-pressed="false"]{color:var(--muted)}
+.hint{margin:0;font-size:12px;color:var(--warm)}
+
+/* panels */
+.panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:10px;margin-block:14px 0;align-items:start}
+.panel{border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.panel>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding-inline:14px;font-weight:600;font-size:14px}
+.panel>summary::-webkit-details-marker{display:none}
+.panel>summary::after{content:"+";font-family:var(--font-mono);color:var(--muted);font-size:18px}
+.panel[open]>summary::after{content:"−"}
+.panel-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.tag{font-size:11px;font-weight:600;color:var(--warm);border:1px solid color-mix(in srgb,var(--warm) 50%,transparent);border-radius:999px;padding:1px 8px;margin-inline-start:8px}
+textarea{width:100%;min-height:112px;resize:vertical;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px;line-height:1.6;direction:rtl}
+textarea::placeholder{color:var(--muted)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{min-height:44px;padding-inline:16px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);font-weight:600;font-size:14px}
+.btn.primary{background:var(--signal);border-color:var(--signal);color:#041418}
+.msg{margin:0;font-size:13px;min-height:1.4em}
+.msg.err{color:var(--hot)}
+.msg.ok{color:var(--signal)}
+.srcs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.srcs li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:var(--bg);font-size:14px}
+.srcs li svg{color:var(--signal);flex:none}
+.srcs .grow{flex:1;min-width:0}
+.srcs .cnt{font-family:var(--font-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.note{margin:0;font-size:12.5px;color:var(--muted)}
+
+.srcs small{display:block;font-size:12px;color:var(--muted)}
+.demo-note[hidden]{display:none}
+/* feed */
+.deal-main{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;min-width:0}
+.deal-main .deal-title{flex:1;min-width:0}
+.thumb{width:64px;height:64px;flex:none;object-fit:cover;border-radius:10px;background:var(--surface-2)}
+.noprice{font-size:14px;color:var(--muted)}
+.orig-row{text-align:center;font-size:12px}
+.orig{color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.feed-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-block:22px 10px}
+.feed-head h2{margin:0;font-family:var(--font-display);font-size:20px;font-weight:700}
+.feed-head span{font-size:12px;color:var(--muted)}
+.feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,310px),1fr));gap:12px}
+.deal{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.deal.fresh{border-color:var(--c)}
+.deal-top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.store{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:13px;min-width:0}
+.mono-badge{width:26px;height:26px;flex:none;border-radius:8px;background:var(--c);color:var(--on-store);display:grid;place-items:center;font-weight:700;font-size:14px}
+.meta{display:inline-flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);white-space:nowrap}
+.meta .src{display:inline-flex;align-items:center;gap:5px}
+.meta time{font-variant-numeric:tabular-nums}
+.deal-title{margin:0;font-size:16px;font-weight:600;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.9em;overflow-wrap:anywhere}
+.deal-price{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.prices{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;min-width:0}
+.now{font-family:var(--font-mono);font-size:27px;font-weight:500;line-height:1.2;font-variant-numeric:tabular-nums}
+.now small{font-family:var(--font-body);font-size:13px;color:var(--muted);margin-inline-start:5px;font-weight:500}
+.old{font-family:var(--font-mono);font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.off{flex:none;direction:ltr;font-family:var(--font-mono);font-weight:500;font-size:15px;padding:4px 11px;border-radius:999px;font-variant-numeric:tabular-nums}
+.off.hot{background:var(--hot);color:#26050d}
+.off.warm{background:color-mix(in srgb,var(--warm) 22%,transparent);color:var(--warm)}
+.off.cool{background:color-mix(in srgb,var(--signal) 16%,transparent);color:var(--signal)}
+.save{font-size:12.5px;color:var(--muted);min-height:1.2em}
+.buy{display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;margin-top:2px;border-radius:10px;background:var(--c);color:var(--on-store);font-weight:700;font-size:15px;text-decoration:none}
+.buy:hover{filter:brightness(1.08)}
+.empty{grid-column:1/-1;padding:36px 16px;text-align:center;border:1px dashed var(--line);border-radius:14px;color:var(--muted)}
+.empty p{margin:0}
+.empty p+p{margin-top:4px;font-size:13px}
+
+.pill-new{position:fixed;inset-inline:0;margin-inline:auto;width:max-content;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;min-height:44px;padding-inline:18px;border-radius:999px;border:0;background:var(--signal);color:#041418;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+
+@media (prefers-reduced-motion:no-preference){
+  .sweep{animation:spin 3.4s linear infinite}
+  .live-pill[aria-pressed="true"] .dot{animation:beat 1.8s ease-out infinite}
+  .mark.ping::after{animation:ring .9s ease-out}
+  .deal.fresh{animation:fresh 2.4s ease-out}
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes beat{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--signal) 60%,transparent)}70%,100%{box-shadow:0 0 0 9px transparent}}
+@keyframes ring{0%{transform:scale(.9);opacity:.9}100%{transform:scale(1.7);opacity:0}}
+@keyframes fresh{
+  0%{transform:translateY(-10px);opacity:.4;box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 75%,transparent)}
+  14%{transform:none;opacity:1}
+  100%{box-shadow:0 0 0 16px transparent}
+}
+@media (max-width:420px){
+  .brand-text h1{font-size:20px}
+  .live-pill{padding-inline:11px}
+  .meta{gap:8px}
+}
+</style>
+
+<div class="app" lang="ar" dir="rtl">
+  <header class="top">
+    <div class="brand">
+      <div class="mark" id="mark">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/>
+          <circle cx="24" cy="24" r="13" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/>
+          <circle cx="24" cy="24" r="5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="1.5"/>
+          <g class="sweep">
+            <path d="M24 24 L24 3 A21 21 0 0 1 43.2 15.6 Z" fill="currentColor" fill-opacity=".28"/>
+            <line x1="24" y1="24" x2="24" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </g>
+          <circle cx="33" cy="15" r="2.8" fill="var(--hot)"/>
+          <circle cx="15" cy="31" r="2" fill="var(--warm)"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>رادار العروض</h1>
+        <span class="latin">DEALS RADAR · EGYPT</span>
+      </div>
+    </div>
+    <button class="live-pill" id="runBtn" aria-pressed="true" title="إيقاف أو تشغيل الرادار">
+      <span class="dot"></span><span id="runText">الرادار متصل</span>
+    </button>
+  </header>
+
+  <p class="demo-note" id="banner" role="status" hidden></p>
+
+  <section class="stats" aria-label="إحصائيات الرادار">
+    <div class="stat"><span class="k">عروض نشطة</span><b class="v" id="stActive">0</b></div>
+    <div class="stat"><span class="k">أعلى خصم</span><b class="v" id="stBest">0%</b></div>
+    <div class="stat"><span class="k">آخر عرض</span><b class="v sm" id="stLast">—</b></div>
+    <div class="stat"><span class="k">تجاهلها الرادار</span><b class="v" id="stIgnored">0</b><span class="sub" id="stIgnoredSub"></span></div>
+  </section>
+
+  <section class="controls" aria-label="الفلاتر">
+    <div class="chips" id="chips" role="group" aria-label="المتجر"></div>
+    <div class="row">
+      <div class="seg" id="seg" role="group" aria-label="أقل نسبة خصم">
+        <button type="button" data-min="0" aria-pressed="true">أي خصم</button>
+        <button type="button" data-min="30" aria-pressed="false"><bdi dir="ltr">30%+</bdi></button>
+        <button type="button" data-min="50" aria-pressed="false"><bdi dir="ltr">50%+</bdi></button>
+      </div>
+      <button type="button" class="switch" id="ruleBtn" role="switch" aria-checked="true">
+        <span class="track"><span class="knob"></span></span>
+        <span>أمازون: <bdi dir="ltr">50%+</bdi> فقط</span>
+      </button>
+      <button type="button" class="tool" id="soundBtn" aria-pressed="true"></button>
+    </div>
+    <p class="hint" id="hint" hidden>المس الشاشة مرة لتفعيل صوت التنبيه.</p>
+  </section>
+
+  <section class="panels">
+    <details class="panel" id="pasteBox">
+      <summary><span>الصق رسالة (من واتساب مثلاً)</span></summary>
+      <div class="panel-body">
+        <label class="sr" for="pasteText">نص الرسالة</label>
+        <textarea id="pasteText" placeholder="الصق هنا نص الرسالة كما وصلتك، بالسعر والرابط. مثال: بدل 2,400 جنيه بـ 1,399 جنيه فقط"></textarea>
+        <div class="btns">
+          <button type="button" class="btn primary" id="pasteGo">أضف العرض لشاشتي</button>
+          <button type="button" class="btn" id="pasteSample">جرّب رسالة مثال</button>
+        </div>
+        <p class="msg" id="pasteMsg" role="status"></p>
+        <p class="note">يقرأ الرادار السعر والرابط والمتجر من نص الرسالة، ويضيفها على شاشتك أنت فقط. لنشر رسائل واتساب لكل الزوار استخدم الجسر الموضح في ملف README.</p>
+      </div>
+    </details>
+    <details class="panel">
+      <summary><span>المصادر المتصلة</span></summary>
+      <div class="panel-body">
+        <ul class="srcs" id="srcList"></ul>
+        <p class="note">يفحص السيرفر القنوات العامة على تليجرام كل بضع ثوانٍ، ويبث أي رسالة جديدة لكل الصفحات المفتوحة فور وصولها.</p>
+      </div>
+    </details>
+  </section>
+
+  <div class="feed-head"><h2>آخر العروض</h2><span>تتحدث تلقائياً فور نزول عرض جديد</span></div>
+  <main class="feed" id="feed"></main>
+  <div class="sr" id="live" aria-live="polite"></div>
+  <button type="button" class="pill-new" id="newPill" hidden></button>
+</div>
+
+<script src="/parser.js"></script>
+<script>
+/* app.js — واجهة رادار العروض: تستقبل العروض الحقيقية من السيرفر عبر /events */
+(function () {
+'use strict';
+var $ = function (s) { return document.querySelector(s); };
+var feed = $('#feed'), mark = $('#mark'), lastEl = $('#stLast'), pill = $('#newPill'), banner = $('#banner');
+
+var STORES = {
+  noon: { name: 'نون مينتس', short: 'نون', mono: 'ن', color: 'var(--c-noon)' },
+  amazon: { name: 'أمازون مصر', short: 'أمازون', mono: 'أ', color: 'var(--c-amazon)' },
+  breadfast: { name: 'بريدفاست', short: 'بريدفاست', mono: 'ب', color: 'var(--c-breadfast)' },
+  talabat: { name: 'طلبات مارت', short: 'طلبات', mono: 'ط', color: 'var(--c-talabat)' },
+  other: { name: 'متجر آخر', short: 'أخرى', mono: '؟', color: 'var(--c-other)' }
+};
+var FILTERS = ['all', 'noon', 'amazon', 'breadfast', 'talabat', 'other'];
+var THRESHOLD = 50;
+
+function svg(p) {
+  return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+}
+var PLANE = '<path d="M21 3 3 10.5l6 2.5 2.5 6L21 3Z"/><path d="m9 13 12-10"/>';
+var CHAT = '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/>';
+var SCAN = '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 12 18 6"/>';
+var SRC = {
+  telegram: { tag: 'تليجرام', icon: svg(PLANE) },
+  whatsapp: { tag: 'واتساب', icon: svg(CHAT) },
+  bridge: { tag: 'مصدر خارجي', icon: svg(SCAN) },
+  manual: { tag: 'رسالة يدوية', icon: svg(PLANE) }
+};
+var SPK_ON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+var SPK_OFF = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="m17 9 5 6m0-6-5 6"/></svg>';
+var CHEV = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>';
+
+var state = { deals: [], channels: [], status: {}, store: 'all', min: 0, amazonRule: true, sound: true, running: true, conn: 'connecting', unseen: 0 };
+var es = null, actx = null, localSeq = 0;
+
+try {
+  var p = JSON.parse(localStorage.getItem('dealsRadar') || '{}');
+  if (p.store && FILTERS.indexOf(p.store) > -1) state.store = p.store;
+  if ([0, 30, 50].indexOf(p.min) > -1) state.min = p.min;
+  if (typeof p.amazonRule === 'boolean') state.amazonRule = p.amazonRule;
+  if (typeof p.sound === 'boolean') state.sound = p.sound;
+} catch (e) {}
+function savePrefs() {
+  try { localStorage.setItem('dealsRadar', JSON.stringify({ store: state.store, min: state.min, amazonRule: state.amazonRule, sound: state.sound })); } catch (e) {}
+}
+
+/* ---------- أدوات ---------- */
+function fmt(n) { return Number(n).toLocaleString('en-US'); }
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+}
+function safeUrl(u) { return /^https?:\/\//i.test(u || '') ? u : ''; }
+function ago(ts) {
+  var s = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+  if (s < 5) return 'الآن';
+  if (s < 60) return 'منذ ثوانٍ';
+  var m = Math.flo
