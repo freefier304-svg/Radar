@@ -223,3 +223,4 @@
 
   return { parseMessage: parseMessage, hostStore: hostStore, normalize: normalize, hostOf: hostOf };
 });
+    
